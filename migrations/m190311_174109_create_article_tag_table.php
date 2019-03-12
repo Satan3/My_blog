@@ -14,7 +14,39 @@ class m190311_174109_create_article_tag_table extends Migration
     {
         $this->createTable('article_tag', [
             'id' => $this->primaryKey(),
+            'user_id' => $this->integer(),
+            'article_id' => $this->integer(),
         ]);
+
+        $this->createIndex(
+            'idx-tag-id',
+            'article_tag',
+            'user_id'
+        );
+
+        $this->addForeignKey(
+            'fk-tag_id',
+            'article_tag',
+            'user_id',
+            'user',
+            'id',
+            'CASCADE'
+        );
+
+        $this->createIndex(
+            'idx-article-id',
+            'article_tag',
+            'article_id'
+        );
+
+        $this->addForeignKey(
+            'fk-tag_id',
+            'article_tag',
+            'article_id',
+            'article',
+            'id',
+            'CASCADE'
+        );
     }
 
     /**

@@ -2,9 +2,9 @@
 
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=91.243.97.9:3310;dbname=dobrodela',
-    'username' => 'dobrodela',
-    'password' => 'Fg239ghkFgt',
+    'dsn' => 'mysql:host=localhost;dbname=blog',
+    'username' => 'root',
+    'password' => '',
     'charset' => 'utf8',
     'enableSchemaCache' => true,
     'schemaCacheDuration' => 3600,

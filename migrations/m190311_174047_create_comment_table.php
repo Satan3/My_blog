@@ -14,7 +14,42 @@ class m190311_174047_create_comment_table extends Migration
     {
         $this->createTable('comment', [
             'id' => $this->primaryKey(),
+            'text' => $this->string(0),
+            'user_id' => $this->integer(),
+            'article_id' => $this->integer(),
         ]);
+
+        $this->createIndex(
+            'idx-post-user-id',
+            'comment',
+            'user_id'
+        );
+
+        $this->addForeignKey(
+            'fk-post-user-id',
+            'comment',
+            'user_id',
+            'user',
+            'id',
+            'CASCADE'
+        );
+
+        $this->createIndex(
+            'idx-article-id',
+            'comment',
+            'article_id'
+        );
+
+        $this->addForeignKey(
+            'fk-article-id',
+            'comment',
+            'article_id',
+            'article',
+            'id',
+            'CASCADE'
+        );
+
+
     }
 
     /**
