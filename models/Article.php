@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "article".
@@ -69,11 +70,13 @@ class Article extends \yii\db\ActiveRecord
         $this->save(false);
     }
 
-    public function getImage(){
-        return ($this->image) ? '/uploads/' . $this->image :'/no-image.png';
+    public function getImage()
+    {
+        return ($this->image) ? '/uploads/' . $this->image : '/uploads/no-image.png';
     }
 
-    public function deleteImage(){
+    public function deleteImage()
+    {
         $imageUploadModel = new ImageUpload();
         $imageUploadModel->deleteCurrentImage($this->image);
     }
@@ -84,17 +87,45 @@ class Article extends \yii\db\ActiveRecord
         return parent::beforeDelete();
     }
 
-    public function getCategory() {
+    public function getCategory()
+    {
         return $this->hasOne(Category::class, ['id' => 'category_id']);
     }
 
     public function saveCategory($category_id)
     {
         $category = Category::findOne($category_id);
-        if($category != null){
+        if ($category != null) {
             $this->link('category', $category);
             return true;
         }
-
     }
+
+    public function getTags()
+    {
+        return $this->hasMany(Tag::class, ['id' => 'user_id'])->viaTable('article_tag', ['article_id' => 'id']);
+    }
+
+    public function getSelectedTags()
+    {
+        $selectedIds = $this->getTags()->select('id')
+            ->asArray()->all();
+        return (ArrayHelper::getColumn($selectedIds, 'id'));
+    }
+
+    public function saveTags($tags) {
+        if(is_array($tags)){
+            ArticleTag::deleteAll(['article_id' => $this->id]);
+            foreach($tags as $tag_id) {
+                $tag = Tag::findOne($tag_id);
+                $this->link('tags', $tag);
+            }
+            return true;
+        }
+    }
+
+    public function getDate() {
+        return Yii::$app->formatter->asDate($this->date);
+    }
+
 }

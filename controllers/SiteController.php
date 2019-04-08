@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-use Curl\Curl;
+use app\models\Category;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -10,34 +10,14 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
-use app\models\EntryForm;
-use app\models\Vk;
-use yii\httpclient\Client;
-use yii\helpers\ArrayHelper;
+use app\models\Article;
+use yii\data\Pagination;
 
 
 class SiteController extends Controller
 {
-    /**
-     * @param string $message
-     * @return string
-     */
-    public function actionSay($message = "Привет"){
-        return $this->render('say', ['message' => $message]);
-    }
 
-    /**
-     * @return string
-     */
-    public function actionEntry(){
-        $model = new EntryForm();
-        if($model->load(Yii::$app->request->post()) && $model->validate()){
-            return $this->render('entry-confirm', ['model' => $model]);
-        }
-        else{
-            return $this->render('entry', ['model' => $model]);
-        }
-    }
+
 
     /**
      * {@inheritdoc}
@@ -81,7 +61,6 @@ class SiteController extends Controller
             ],
         ];
     }
-
     /**
      * Displays homepage.
      *
@@ -89,56 +68,25 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $query = Article::find();
+        $count = $query->count();
+        $pagination = new Pagination(['totalCount' => $count, 'pageSize' => 1]);
+
+        $articles = $query->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+        $popular = Article::find()->orderBy('viewed desc')->limit(3)->all();
+        $recent = Article::find()->orderBy('date asc')->limit(4)->all();
+        $categories = Category::find()->all();
+
+        return $this->render('index', [
+            'articles' => $articles,
+            'pagination' => $pagination,
+            'popular' => $popular,
+            'recent' => $recent,
+            'categories' => $categories
+        ]);
     }
-
-
-    /**
-     * Displays vk.
-     *
-     * @return string
-     */
-    public function actionVk()
-    {
-        $model = new Vk();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $term = $model->term;
-            $curl = new Curl();
-            $curl->post('https://api.vk.com/method/database.getSchool', array('access_token' => 'c2badfb139dbfc64e625349230a5b8752f577fbe6a3b7af87f4cb02d04a906775e4aa3334637298b5fbe1',
-                'need_all' => '1',
-                'v' => '5.87',
-                'q' => $term,
-                'count' => '100',
-                'country_id' => '1',
-            ));
-
-            if ($curl->error) {
-                $message = $curl->error_code;
-            } else {
-                $message = $curl->response;
-                $message = json_decode($message);
-                $message = ArrayHelper::getValue($message, 'response.items');
-                foreach ($message as $k => $v){
-
-                }
-            }
-            return $this->render('vk-response', ['message' => $message, 'model' => $model]);
-        } else {
-            return $this->render('vk', ['model' => $model]);
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Login action.
