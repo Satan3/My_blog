@@ -13,7 +13,6 @@ use app\models\ContactForm;
 use app\models\Article;
 use yii\data\Pagination;
 
-
 class SiteController extends Controller
 {
 
@@ -68,23 +67,43 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $query = Article::find();
-        $count = $query->count();
-        $pagination = new Pagination(['totalCount' => $count, 'pageSize' => 1]);
-
-        $articles = $query->offset($pagination->offset)
-            ->limit($pagination->limit)
-            ->all();
-        $popular = Article::find()->orderBy('viewed desc')->limit(3)->all();
-        $recent = Article::find()->orderBy('date asc')->limit(4)->all();
-        $categories = Category::find()->all();
+        $data = Article::getAll(1);
+        $popular = Article::getPopular();
+        $recent = Article::getRecent();
+        $categories = Category::getAll();
 
         return $this->render('index', [
-            'articles' => $articles,
-            'pagination' => $pagination,
+            'articles' => $data['articles'],
+            'pagination' => $data['pagination'],
             'popular' => $popular,
             'recent' => $recent,
             'categories' => $categories
+        ]);
+    }
+
+    public function actionView($id){
+        $article = Article::findOne($id);
+        $popular = Article::getPopular();
+        $recent = Article::getRecent();
+        $categories = Category::getAll();
+
+        return $this->render('single', [
+            'article' => $article,
+            'popular' => $popular,
+            'recent' => $recent,
+            'categories' => $categories
+        ]);
+    }
+
+    public function actionCategory($id){
+
+        $data = Category::getArticlesByCategory($id);
+        return $this->render('category',[
+            'pagination' => $data['pagination'],
+            'articles' => $data['articles'],
+            'popular' => $data['popular'],
+            'recent' => $data['recent'],
+            'categories' => $data['categories']
         ]);
     }
 

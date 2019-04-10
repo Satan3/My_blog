@@ -1,8 +1,8 @@
 <?php
 
 namespace app\models;
-
 use Yii;
+use yii\data\Pagination;
 
 /**
  * This is the model class for table "category".
@@ -47,5 +47,32 @@ class Category extends \yii\db\ActiveRecord
 
     public function getArticlesCount(){
         return $this->getArticles()->count();
+    }
+
+    public static function getAll() {
+        return Category::find()->all();
+    }
+
+    public static function getArticlesByCategory($id) {
+        $query = Article::find()->where(['category_id' => $id]);
+        $count = $query->count();
+        $pagination = new Pagination(['totalCount' => $count, 'pageSize' => 6]);
+
+        $articles = $query->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+
+        $popular = Article::getPopular();
+        $recent = Article::getRecent();
+        $categories = Category::getAll();
+
+        $data = [
+            'pagination' => $pagination,
+            'articles' => $articles,
+            'popular' => $popular,
+            'recent' => $recent,
+            'categories' => $categories
+        ];
+        return $data;
     }
 }
